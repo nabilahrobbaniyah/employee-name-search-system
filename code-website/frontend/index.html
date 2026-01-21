@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard Employee</title>
+</head>
+<body>
+
+<h2>Pencarian Nama Employee Menggunakan Sequential Search Iteratif atau Rekursif</h2>
+
+<label>Nama:</label>
+<input id="name">
+
+<label>Jumlah data (n):</label>
+<input id="n" type="number" value="5">
+
+<button onclick="search('iterative')">Search Iteratif</button>
+<button onclick="search('recursive')">Search Rekursif</button>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nama</th>
+      <th>Departemen</th>
+    </tr>
+  </thead>
+  <tbody id="result"></tbody>
+</table>
+<p id="runtime"></p>
+
+<script>
+alert("JS LOADED");
+async function search(method) {
+  const name = document.getElementById('name').value;
+  const n = document.getElementById('n').value;
+
+  const res = await fetch(
+    `http://localhost:8080/search?name=${name}&n=${n}&method=${method}`
+  );
+
+  const data = await res.json();
+  console.log(data);
+
+  const tbody = document.getElementById('result');
+  const runtime = document.getElementById('runtime');
+
+  tbody.innerHTML = '';
+  runtime.innerHTML = '';
+
+  if (!data.result) {
+    tbody.innerHTML = '<tr><td colspan="3">Data tidak ditemukan</td></tr>';
+    runtime.innerHTML = `Metode: ${data.method} | Waktu eksekusi: ${data.time_us} µs`;
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td>${data.result.id}</td>
+      <td>${data.result.name}</td>
+      <td>${data.result.department}</td>
+    </tr>
+  `;
+
+  runtime.innerHTML = `
+    Metode: ${data.method} <br>
+    Waktu eksekusi: ${data.time_us.toFixed(2)} µs
+  `;
+}
+</script>
+
+</body>
+</html>
