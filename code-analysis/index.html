@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Analisis Kompleksitas Algoritma</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h2>Analisis Kompleksitas Sequential Search</h2>
+
+Ukuran Input (n):
+<input type="number" id="n" value="10000"><br><br>
+
+Skenario:
+<select id="case">
+    <option value="best">Best Case</option>
+    <option value="average">Average Case</option>
+    <option value="worst">Worst Case</option>
+</select><br><br>
+
+<button onclick="run()">Jalankan Analisis</button>
+
+<h3>Hasil</h3>
+<p id="info"></p>
+
+<table border="1">
+<tr>
+    <th>Algoritma</th>
+    <th>Waktu Eksekusi (ms)</th>
+    <th>Kelas Kompleksitas</th>
+</tr>
+<tr>
+    <td>Iteratif</td>
+    <td id="itTime"></td>
+    <td id="itClass"></td>
+</tr>
+<tr>
+    <td>Rekursif</td>
+    <td id="recTime"></td>
+    <td id="recClass"></td>
+</tr>
+</table>
+
+<h3>Grafik Running Time vs Ukuran Input</h3>
+<canvas id="chart"></canvas>
+
+<script>
+let chart;
+
+async function run() {
+    const n = document.getElementById("n").value;
+    const scenario = document.getElementById("case").value;
+
+    const res = await fetch(`/run?n=${n}&case=${scenario}`);
+    const data = await res.json();
+
+    document.getElementById("info").innerText =
+        `Skenario: ${data.scenario}, Target: ${data.target}`;
+
+    document.getElementById("itTime").innerText =
+        data.iterative.toFixed(4);
+    document.getElementById("recTime").innerText =
+        data.recursive.toFixed(4);
+
+    // Kelas kompleksitas ditampilkan eksplisit, tidak disimpulkan dari grafik
+    document.getElementById("itClass").innerText = data.complexity;
+    document.getElementById("recClass").innerText = data.complexity;
+
+    // Grafik empiris untuk melihat tren pertumbuhan
+    const sizes = [];
+    const itTimes = [];
+    const recTimes = [];
+
+    for (let size = 1000; size <= n; size += 1000) {
+        const r = await fetch(`/run?n=${size}&case=${scenario}`);
+        const d = await r.json();
+
+        sizes.push(size);
+        itTimes.push(d.iterative);
+        recTimes.push(d.recursive);
+    }
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("chart"), {
+        type: "line",
+        data: {
+            labels: sizes,
+            datasets: [
+                { label: "Iteratif", data: itTimes },
+                { label: "Rekursif", data: recTimes }
+            ]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: "Ukuran Input (n)" } },
+                y: { title: { display: true, text: "Waktu Eksekusi (ms)" } }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
